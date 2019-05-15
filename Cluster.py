@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 
 class Cluster:
-    def __init__(self, coords_of_points , right_clustering, resulting_clustering=[]):
+    def __init__(self, coords_of_points : np.array, right_clustering : np.array, resulting_clustering=[]):
         self.coord_of_points, self.right_clustering = self.sort(coords_of_points, right_clustering)
         self.resulting_clustering = resulting_clustering
         self.__number_of_vertices = self.coord_of_points.shape[0]
@@ -19,7 +19,7 @@ class Cluster:
     def sort(self, coords_of_points, right_clustering):
         index = coords_of_points[:, 0].argsort()
         coords_of_points = coords_of_points[index]
-        if right_clustering != None:
+        if right_clustering is not None:
             right_clustering = right_clustering[index]
         return coords_of_points, right_clustering
 

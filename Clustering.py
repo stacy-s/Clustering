@@ -87,7 +87,6 @@ class DBSCAN(Clustering):
         while len(root_vertices) != 0:
             to = root_vertices[0]
             root_vertices.pop(0)
-            print("*",to)
             if not self._used[to]:
                 self._used[to] = True
                 if self.elementary_graph[to].shape[0] >= self.minPts:
@@ -211,6 +210,7 @@ class K_MXTGauss(K_MXT):
     def weight(self, v, u):
         dist = self.distance(self.cluster.coord_of_points[v], self.cluster.coord_of_points[u])
         return self.gauss(dist) * super().weight(v, u)
+
 
 class K_MXTGaussGreatCircle(K_MXTGauss):
     def __init__(self, eps, k, cluster: Cluster):
