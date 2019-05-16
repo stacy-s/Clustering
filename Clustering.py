@@ -24,13 +24,13 @@ class Clustering():
         self.number_of_vertices = self.cluster.coord_of_points.shape[0]
         self._default_cluster_number = 0
         self.cluster.resulting_clustering = np.full(self.number_of_vertices, self._default_cluster_number)
-        self.distance = distance2d
+        self._distance = distance2d
         self.elementary_graph = None
 
-    def distance_between_1st_coord(self, v, u):
+    def _distance_between_1st_coord(self, v, u):
         return abs(self.cluster.coord_of_points[v][0] - self.cluster.coord_of_points[u][0])
 
-    def left_binary_search(self, left, right, x):
+    def _left_binary_search(self, left, right, x):
         """
         Бинарный поиск для поиска самого левого подходящего значения
         """
@@ -38,13 +38,13 @@ class Clustering():
         rg = right
         while rg - lf > 1:
             mid = lf + (rg - lf) // 2
-            if self.distance_between_1st_coord(mid, x) > self.eps:
+            if self._distance_between_1st_coord(mid, x) > self.eps:
                 lf = mid
             else:
                 rg = mid
         return rg
 
-    def right_binary_search(self, left, right, x):
+    def _right_binary_search(self, left, right, x):
         """
         Бинарный поиск для поиска самого правого подходящего значения
         """
@@ -52,7 +52,7 @@ class Clustering():
         rg = right + 1
         while rg - lf > 1:
             mid = lf + (rg - lf) // 2
-            if self.distance_between_1st_coord(mid, x) <= self.eps:
+            if self._distance_between_1st_coord(mid, x) <= self.eps:
                 lf = mid
             else:
                 rg = mid
@@ -60,11 +60,11 @@ class Clustering():
 
     def _vertex_neighbor_list(self, vertex):
         neighbor = []
-        left = self.left_binary_search(0, vertex, vertex)
-        right = self.right_binary_search(vertex, self.number_of_vertices - 1, vertex)
+        left = self._left_binary_search(0, vertex, vertex)
+        right = self._right_binary_search(vertex, self.number_of_vertices - 1, vertex)
         for to in range(left, right + 1):
-            if to != vertex and self.distance(self.cluster.coord_of_points[vertex],
-                                              self.cluster.coord_of_points[to]) + EPS <= self.eps:
+            if to != vertex and self._distance(self.cluster.coord_of_points[vertex],
+                                               self.cluster.coord_of_points[to]) + EPS <= self.eps:
                 neighbor.append(to)
         return np.array(neighbor)
 
@@ -81,7 +81,7 @@ class DBSCAN(Clustering):
         self.minPts = minPts
         self._used = np.full(self.number_of_vertices, False)
 
-    def cluster_expansion(self, v, root_vertices, number_of_cluster):
+    def _cluster_expansion(self, v, root_vertices, number_of_cluster):
         self.cluster.resulting_clustering[v] = number_of_cluster
         root_vertices = list(root_vertices)
         while len(root_vertices) != 0:
@@ -94,7 +94,7 @@ class DBSCAN(Clustering):
             if self.cluster.resulting_clustering[to] == self._default_cluster_number:
                 self.cluster.resulting_clustering[to] = number_of_cluster
 
-    def clustering(self):
+    def _clustering(self):
         number_of_next_cluster = self._default_cluster_number + 1
         for v in range(self.number_of_vertices):
             if self._used[v]:
@@ -104,18 +104,18 @@ class DBSCAN(Clustering):
             root_vertices = self.elementary_graph[v]
             if root_vertices.shape[0] < self.minPts:
                 continue
-            self.cluster_expansion(v, root_vertices, number_of_next_cluster)
+            self._cluster_expansion(v, root_vertices, number_of_next_cluster)
             number_of_next_cluster += 1
 
     def __call__(self):
         self.elementary_graph = self._make_elementary_graph()
-        self.clustering()
+        self._clustering()
 
 
 class DBSCANGreatCircle(DBSCAN):
     def __init__(self, eps, minPts, cluster: Cluster):
         DBSCAN.__init__(self, eps, minPts, cluster)
-        self.distance = distance_great_circle
+        self._distance = distance_great_circle
 
 
 class K_MXT(Clustering):
@@ -126,27 +126,27 @@ class K_MXT(Clustering):
         self.graph_consists_of_k_arcs = None
         self.binary_representation_of_elementary_graph = None
 
-    def build_binary_elementary_graph(self):
+    def _build_binary_elementary_graph(self):
         self.binary_representation_of_elementary_graph = np.zeros((self.number_of_vertices, self.number_of_vertices), dtype=int)
         for v in range(self.number_of_vertices):
             for to in self.elementary_graph[v]:
                 self.binary_representation_of_elementary_graph[v][to] = 1
 
-    def weight(self, v, u):
+    def _weight(self, v, u):
         return np.sum(self.binary_representation_of_elementary_graph[v] *
                       self.binary_representation_of_elementary_graph[u])
 
-    def counting_weights_of_neighbors(self, v):
+    def _counting_weights_of_neighbors(self, v):
         cnt_neighbor = self.elementary_graph[v].shape[0]
         cnt_information = 2
         weights = np.full((cnt_neighbor, cnt_information), 0)
         for i, to in enumerate(self.elementary_graph[v]):
-            weights[i, 0] = self.weight(v, to)
+            weights[i, 0] = self._weight(v, to)
             weights[i, 1] = to
             # print(weights)
         return weights
 
-    def choose_k_arcs(self, v):
+    def _choose_k_arcs(self, v):
         def sorting_weight_in_descending_order(weights):
             index = weights[:, 0].argsort()
             weights = weights[index]
@@ -169,7 +169,7 @@ class K_MXT(Clustering):
             np.random.shuffle(equal_weights)
             return equal_weights[:need2add, 1]
 
-        weights = self.counting_weights_of_neighbors(v)
+        weights = self._counting_weights_of_neighbors(v)
         weights = sorting_weight_in_descending_order(weights)
         k = min(self.k, len(self.elementary_graph[v]))
         weights_more_that_k_position = get_weights_more_than_k_position(weights, k)
@@ -179,24 +179,27 @@ class K_MXT(Clustering):
                                                get_weights_equal_k_position(weights, need2add, k))))
         return [int(x) for x in result_vertices]
 
-    def build_graph_consists_of_k_arcs(self):
+    def _build_graph_consists_of_k_arcs(self):
         self.graph_consists_of_k_arcs = [[] for _ in range(self.number_of_vertices)]
         for v in range(self.number_of_vertices):
-            self.graph_consists_of_k_arcs[v] = self.choose_k_arcs(v)
+            self.graph_consists_of_k_arcs[v] = self._choose_k_arcs(v)
 
     def __call__(self):
         self.elementary_graph = self._make_elementary_graph()
-        self.build_binary_elementary_graph()
-        self.build_graph_consists_of_k_arcs()
+        self._build_binary_elementary_graph()
+        self._build_graph_consists_of_k_arcs()
         g = Graph.StronglyConnectedComponent(self.number_of_vertices, self.graph_consists_of_k_arcs,
                                              self._default_cluster_number)
         self.cluster.resulting_clustering = g()
+
+    def __str__(self):
+        return "{0}-MXT, eps = {1}".format(self.k, self.eps)
 
 
 class K_MXTGreatCircle(K_MXT):
     def __init__(self, eps, k, cluster: Cluster):
         K_MXT.__init__(self, eps, k, cluster)
-        self.distance = distance_great_circle
+        self._distance = distance_great_circle
 
 
 class K_MXTGauss(K_MXT):
@@ -207,12 +210,15 @@ class K_MXTGauss(K_MXT):
     def gauss(self, x):
         return 1 / (self.sigma * np.sqrt(np.pi * 2)) * np.exp(-x ** 2 / (2 * self.sigma ** 2))
 
-    def weight(self, v, u):
-        dist = self.distance(self.cluster.coord_of_points[v], self.cluster.coord_of_points[u])
-        return self.gauss(dist) * super().weight(v, u)
+    def _weight(self, v, u):
+        dist = self._distance(self.cluster.coord_of_points[v], self.cluster.coord_of_points[u])
+        return self.gauss(dist) * super()._weight(v, u)
+
+    def __str__(self):
+        return "{0}-MXT-Gauss, eps = {1}".format(self.k, self.eps)
 
 
 class K_MXTGaussGreatCircle(K_MXTGauss):
     def __init__(self, eps, k, cluster: Cluster):
         K_MXTGauss.__init__(self, eps, k, cluster)
-        self.distance = distance_great_circle
+        self._distance = distance_great_circle

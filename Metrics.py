@@ -22,29 +22,29 @@ class Modularity():
     """
 
     def __init__(self, clustering: Clustering.Clustering):
-        self.cluster = clustering.cluster
-        self.number_of_clusters = max(clustering.cluster.resulting_clustering) + 1
-        self.e = np.zeros(self.number_of_clusters)
-        self.a = np.zeros(self.number_of_clusters)
-        self.elementary_graph = clustering.elementary_graph
-        self.total_number_of_edges = 0
+        self.__cluster = clustering.cluster
+        self.__number_of_clusters = max(clustering.cluster.resulting_clustering) + 1
+        self.__e = np.zeros(self.__number_of_clusters)
+        self.__a = np.zeros(self.__number_of_clusters)
+        self.__elementary_graph = clustering.elementary_graph
+        self.__total_number_of_edges = 0
 
-    def calculate_cluster_edge(self):
+    def __calculate_cluster_edge(self):
         """
         Подсчет общего кол-ва ребер, e, a для каждого кластера
         """
-        for i in range(len(self.elementary_graph)):
-            for j in self.elementary_graph[i]:
-                self.total_number_of_edges += 1
-                if self.cluster.resulting_clustering[i] == -1:
+        for i in range(len(self.__elementary_graph)):
+            for j in self.__elementary_graph[i]:
+                self.__total_number_of_edges += 1
+                if self.__cluster.resulting_clustering[i] == -1:
                     continue
-                self.a[self.cluster.resulting_clustering[i]] += 1
-                if self.cluster.resulting_clustering[i] == self.cluster.resulting_clustering[j]:
-                    self.e[self.cluster.resulting_clustering[i]] += 1
+                self.__a[self.__cluster.resulting_clustering[i]] += 1
+                if self.__cluster.resulting_clustering[i] == self.__cluster.resulting_clustering[j]:
+                    self.__e[self.__cluster.resulting_clustering[i]] += 1
 
     def __call__(self):
-        self.calculate_cluster_edge()
+        self.__calculate_cluster_edge()
         score = 0
-        for i in range(self.number_of_clusters):
-            score += self.e[i] / self.total_number_of_edges - (self.a[i] / self.total_number_of_edges) ** 2
+        for i in range(self.__number_of_clusters):
+            score += self.__e[i] / self.__total_number_of_edges - (self.__a[i] / self.__total_number_of_edges) ** 2
         return score

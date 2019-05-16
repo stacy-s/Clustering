@@ -11,19 +11,21 @@ import matplotlib.pyplot as plt
 
 
 class Cluster:
-    def __init__(self, coords_of_points : np.array, right_clustering : np.array, resulting_clustering=[]):
-        self.coord_of_points, self.right_clustering = self.sort(coords_of_points, right_clustering)
+    def __init__(self, coords_of_points: np.ndarray, right_clustering: np.ndarray, resulting_clustering=None):
+        if resulting_clustering is None:
+            resulting_clustering = []
+        self.coord_of_points, self.right_clustering = self.__sort(coords_of_points, right_clustering)
         self.resulting_clustering = resulting_clustering
         self.__number_of_vertices = self.coord_of_points.shape[0]
 
-    def sort(self, coords_of_points, right_clustering):
+    def __sort(self, coords_of_points, right_clustering):
         index = coords_of_points[:, 0].argsort()
         coords_of_points = coords_of_points[index]
         if right_clustering is not None:
             right_clustering = right_clustering[index]
         return coords_of_points, right_clustering
 
-    def make_colors_of_clusters(self):
+    def _make_colors_of_clusters(self):
         """
         Определение цвета для каждого класстера
         """
@@ -43,7 +45,7 @@ class Cluster:
         return colors_of_clusters
 
     def view(self, title='', figsize=(7, 7)):
-        colors_of_clusterts = self.make_colors_of_clusters()
+        colors_of_clusterts = self._make_colors_of_clusters()
         colors_of_points = []
         for i in range(len(self.resulting_clustering)):
             colors_of_points.append(colors_of_clusterts[self.resulting_clustering[i]])
@@ -52,6 +54,8 @@ class Cluster:
         plot = fig.add_subplot()
         plt.scatter(self.coord_of_points[:, 0], self.coord_of_points[:, 1], c=colors_of_points, s=10)
         plt.title(title)
+        plt.xlabel("x")
+        plt.ylabel("y")
         plt.show()
 
     def __str__(self):
@@ -64,10 +68,10 @@ class ClusterGreatCircles(Cluster):
     def __init__(self, filepath, filename,  resulting_clustering=None):
         self.filepath = filepath
         self.filename = filename
-        super().__init__(self.load(), None, resulting_clustering)
+        super().__init__(self.__load(), None, resulting_clustering)
         self.__number_of_vertices = self.coord_of_points.shape[0]
 
-    def load(self):
+    def __load(self):
         df = pd.read_csv(self.filepath + self.filename)
         df['latitude'].astype('float64')
         df['longitude'].astype('float64')
@@ -77,11 +81,11 @@ class ClusterGreatCircles(Cluster):
         coords_of_points = coords_of_points[coords_of_points[:, 0].argsort()]
         return coords_of_points
 
-    def make_colors_of_clusters(self, default_cluster_number):
-        colors_of_clusters = super().make_colors_of_clusters()
+    def _make_colors_of_clusters(self, default_cluster_number):
+        colors_of_clusters = super()._make_colors_of_clusters()
         red = "#FF0000"
         for i in range(self.__number_of_vertices):
-            if colors_of_clusters[self.resulting_clustering[i]] != red and\
+            if colors_of_clusters[self.resulting_clustering[i]] != red and \
                     (self.resulting_clustering[i] == default_cluster_number or
                     np.count_nonzero(self.resulting_clustering == self.resulting_clustering[i]) <= 1):
                 colors_of_clusters[self.resulting_clustering[i]] = red
@@ -96,16 +100,15 @@ class ClusterGreatCircles(Cluster):
             tiles='https://cartodb-basemaps-{s}.global.ssl.fastly.net/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png',
             attr='My').add_to(fmap)
         folium.LayerControl().add_to(fmap)
-        colors_of_clusters = self.make_colors_of_clusters(default_cluster_number)
+        colors_of_clusters = self._make_colors_of_clusters(default_cluster_number)
         for i in range(self.__number_of_vertices):
             folium.CircleMarker([self.coord_of_points[i, 1], self.coord_of_points[i, 0]],
                                 radius=2, fill=True, color=colors_of_clusters[self.resulting_clustering[i]],
                                 popup=str(self.resulting_clustering[i])).add_to(fmap)
         fmap.save('test.html')
 
-
     def view(self, title='', figsize=(7, 7)):
         super().view(title, figsize)
 
     def __str__(self):
-        return "filename: {0}\n".format(self.filename) + super.__str__()
+        return "filename: {0}\n".format(self.filename) + super().__str__()
