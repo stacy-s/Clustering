@@ -1,3 +1,6 @@
+"""
+Модуль работы с алгоритмом кластеризации k-means
+"""
 from sklearn.datasets import make_blobs, make_moons, make_circles
 from sklearn.cluster import KMeans
 import tkinter

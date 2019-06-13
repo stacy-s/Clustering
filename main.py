@@ -7,7 +7,8 @@ from sklearn.datasets import make_moons, make_blobs, make_circles
 import time
 
 
-def build_plot_metrics_eps(k, eps: np.ndarray, algorithm_clustering, cluster: Cluster.Cluster, step=0.5):
+def build_plot_metrics_eps(k, eps: np.ndarray, algorithm_clustering, metric, cluster: Cluster.Cluster, step=0.5,
+                           is_show_time=False):
     """
     Запуск алгоритма кластеризации для всех указанных значений параметра eps для некоторого значения k.
     Иллюстрация самого лучшего разбиения на кластеры для заданного k
@@ -15,15 +16,17 @@ def build_plot_metrics_eps(k, eps: np.ndarray, algorithm_clustering, cluster: Cl
     :param k: значение k
     :param eps: numpy массив значений eps
     :param algorithm_clustering: алгоритм кластеризации
+    :param metric: алгоритм оценки качества кластеризации из модуля Metrics
     :param cluster: объект класса cluster
     :param step: шаг сетки на графике зависимости метрики ARI от значений eps
+    :param is_show_time: нужно ли печать время работы алгоритма кластеризации
     :return: None
     """
     def make_title(obj):
         """
-
+        Получение названия алгоритма
         :param obj:
-        :return:
+        :return: название алгоритма
         """
         title = str(obj)
         title = title[:title.find(',')]
@@ -31,20 +34,21 @@ def build_plot_metrics_eps(k, eps: np.ndarray, algorithm_clustering, cluster: Cl
 
     value_of_metric = []
     objects = []
-    working_time = []
     for cur_eps in eps:
         c = algorithm_clustering(k=k, eps=cur_eps, cluster=cluster)
         start = time.time()
         c()
-        working_time.append(time.time() - start)
-        metric = Metrics.ARI(c.cluster)
-        value_of_metric.append(metric())
+        end = time.time()
+        score = metric(c)
+        value_of_metric.append(score())
         objects.append(c)
+        if is_show_time:
+            print(end - start)
     pos = BuildData.find_position_of_max_value_of_metric(value_of_metric)
-    BuildData.build_point(value_of_metric[pos], objects[pos])
+    BuildData.build_point(value_of_metric[pos], objects[pos], metric.__name__)
     points = np.array([[eps[i], value_of_metric[i]] for i in range(len(value_of_metric))])
     title = make_title(objects[pos])
-    BuildData.make_plot(points, title, "ARI", np.arange(0.0, max(eps) + step, step), np.arange(0.0, 1.1, 0.1))
+    BuildData.make_plot(points, title, metric.__name__, np.arange(0.0, max(eps) + step, step), np.arange(0.0, 1.1, 0.1))
 
 
 def main():
@@ -59,7 +63,8 @@ def main():
     for points, correct_clustering in data:
         d = Cluster.Cluster(points, correct_clustering)
         for k in range(1, 13):
-            build_plot_metrics_eps(k, np.arange(0.1, 4.1, 0.1), Clustering.K_MXT, d)
+            build_plot_metrics_eps(k, np.arange(0.1, 4.1, 0.1), Clustering.K_MXT, Metrics.ARI, d)
+            build_plot_metrics_eps(k, np.arange(0.1, 4.1, 0.1), Clustering.K_MXTGauss, Metrics.ARI, d)
 
     # Кластеризация данных для города Санкт-Петербурга при заданных значениях параметров k и eps.
     d = Cluster.ClusterGreatCircles('~/documents/diplom/', 'geoflickr_spt.csv')
@@ -69,6 +74,7 @@ def main():
             c()
             c.cluster.view_at_map(latitude=59.93863, longitude=30.31413,
                                   filename_of_map="{0}-MXT-eps{1}".format(k, eps))
+
 
 
 if __name__ == '__main__':

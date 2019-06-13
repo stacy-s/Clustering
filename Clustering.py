@@ -1,3 +1,6 @@
+"""
+Модуль алгоритмов кластеризации
+"""
 import numpy as np
 import math
 import Cluster
@@ -137,92 +140,30 @@ class Clustering():
             graph[v] = self._vertex_neighbor_list(v)
         return graph
 
+    def counting_number_of_elements_in_list(self, lst):
+        """
+        Подсчет количества элементов в двумерном списке
+        :param lst: список двумерный
+        :return: количество элементов в списке
+        """
+        number_of_elements = 0
+        for i in range(len(lst)):
+            number_of_elements += len(lst[i])
+        return number_of_elements
 
-class DBSCAN(Clustering):
-    """
-    Класс алгоритма кластеризации DBSCAN для точек в декартовой системе координат.
-    """
-
-    def __init__(self, eps, minPts, cluster: Cluster):
+    def counting_number_of_arcs_in_elementary_graph(self):
         """
-        Конструктор
-        :param eps:  расстояние. Точки находящиеся на расстояние не превосходящим eps будут соединяться ребром
-        :param minPts: минимальное количество соседей, при котором вершина не является шумом.
-        :param cluster: объект класса Cluster.Cluster, с информацией о точках
+        Подсчет количества дуг в начальном графе
+        :return: количество дуг в начальном графе
         """
-        super().__init__(eps, cluster)
-        self.minPts = minPts
-        self._used = np.full(self.number_of_vertices, False)  # массив, показывающий была ли вершина обработана
-
-    def _cluster_expansion(self, v, root_vertices, number_of_cluster):
-        """
-        Функция расширения текущего кластера
-        :param v: стартовая вершина кластера
-        :param root_vertices: список вершин достижимых из кластера. Изначально содержутся соседи вершины v
-        :param number_of_cluster: уникальный номер текущего кластера. Номера кластера должны увеличиваться в шагом 1.
-        :return: None
-        """
-        self.cluster.resulting_clustering[v] = number_of_cluster
-        root_vertices = list(root_vertices)
-        while len(root_vertices) != 0:
-            to = root_vertices[0]
-            root_vertices.pop(0)
-            if not self._used[to]:
-                self._used[to] = True
-                if self.elementary_graph[to].shape[0] >= self.minPts:
-                    root_vertices += list(self.elementary_graph[to])
-            if self.cluster.resulting_clustering[to] == self._default_cluster_number:
-                self.cluster.resulting_clustering[to] = number_of_cluster
-
-    def _clustering(self):
-        """
-        функция кластеризации начального графа (self.elementary_graph)
-        :return: None
-        """
-        number_of_next_cluster = self._default_cluster_number + 1
-        for v in range(self.number_of_vertices):
-            if self._used[v]:
-                continue
-            self._used[v] = True
-            root_vertices = self.elementary_graph[v]
-            if root_vertices.shape[0] < self.minPts:
-                continue
-            self._cluster_expansion(v, root_vertices, number_of_next_cluster)
-            number_of_next_cluster += 1
-
-    def __call__(self):
-        """
-        Построение графа и его кластеризация.
-        :return: None
-        """
-        self.elementary_graph = self._make_elementary_graph()
-        self._clustering()
-
-
-class DBSCANGreatCircle(DBSCAN):
-    """
-    Алгоритм кластеризации DBSCAN для точек на поверхности Земли.
-    """
-
-    def __init__(self, eps, minPts, cluster: Cluster):
-        """
-        Конструктор
-        :param eps:  расстояние. Точки находящиеся на расстояние не превосходящим eps будут соединяться ребром
-        :param minPts: минимальное количество соседей, при котором вершина не является шумом.
-        :param cluster: объект класса Cluster.Cluster, с информацией о точках
-        """
-        DBSCAN.__init__(self, eps, minPts, cluster)
-        self._distance = distance_great_circle  # функция посчета расстояния между двумя вершинами на поверхности шара
-        self._distance_between_1st_coord = \
-            distance_between_1st_coord_great_circle  # функция подсчета расстояния по долготе (на повехности Земли)
-
+        return self.counting_number_of_elements_in_list(self.elementary_graph)
 
 class K_MXT(Clustering):
     """
     Алгоритм кластеризации k-MXT для точек в декартовой системе координат.
     """
 
-    def __init__(self, eps, k, cluster: Cluster):
+    def __init__(self, eps, k, cluster: Cluster.Cluster):
         """
         Конструктор
         :param eps: расстояние. Точки находящиеся на расстояние не превосходящим eps будут соединяться ребром
@@ -338,6 +279,13 @@ class K_MXT(Clustering):
         for v in range(self.number_of_vertices):
             self.graph_consists_of_k_arcs[v] = self._choose_k_arcs(v)
 
+    def counting_number_of_arcs_in_graph_consists_of_k_arcs(self):
+        """
+        Подсчет количества дуг в графе, в котором не более k исходящих дуг.
+        :return: количество дуг в графе, в котором не более k исходящих дуг
+        """
+        return self.counting_number_of_elements_in_list(self.graph_consists_of_k_arcs)
+
     def __call__(self):
         """
         Построение начального графа.
@@ -362,7 +310,7 @@ class K_MXTGreatCircle(K_MXT):
     Класс алгоритма k-MXT для точек на поверхности шара
     """
 
-    def __init__(self, eps, k, cluster: Cluster):
+    def __init__(self, eps, k, cluster: Cluster.Cluster):
         """
         Конструктор
         :param eps: расстояние. Точки находящиеся на расстояние не превосходящим eps будут соединяться ребром
@@ -380,7 +328,7 @@ class K_MXTGauss(K_MXT):
     Класс алгоритма k-MXT-Gauss для точек в декартовой системе координат
     """
 
-    def __init__(self, eps, k, cluster: Cluster):
+    def __init__(self, eps, k, cluster: Cluster.Cluster):
         """
         Конструктор
         :param eps: расстояние. Точки находящиеся на расстояние не превосходящим eps будут соединяться ребром
@@ -419,7 +367,7 @@ class K_MXTGaussGreatCircle(K_MXTGauss):
         Класс алгоритма k-MXT-Gauss для точек на поверхности Земли
         """
 
-    def __init__(self, eps, k, cluster: Cluster):
+    def __init__(self, eps, k, cluster: Cluster.Cluster):
         """
         Конструктор
         :param eps: расстояние. Точки находящиеся на расстояние не превосходящим eps будут соединяться ребром

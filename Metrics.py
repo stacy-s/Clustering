@@ -1,19 +1,22 @@
+"""
+Модуль метрик оценки качества кластеризации
+"""
 import Cluster
 import Clustering
 from sklearn.metrics.cluster import adjusted_rand_score
 import numpy as np
 
 
-class ARI():
+class ARI:
     """
     Подсчет метрики ARI
     """
-    def __init__(self, cluster: Cluster.Cluster):
+    def __init__(self, clustering: Clustering.Clustering):
         """
         Конструктор
-        :param cluster: объект класса Cluster.Cluster, с информацией о точках
+        :param clustering: объект класса алгоритма кластеризации
         """
-        self.cluster = cluster
+        self.cluster = clustering.cluster
 
     def __call__(self):
         """
@@ -23,7 +26,7 @@ class ARI():
         return adjusted_rand_score(self.cluster.right_clustering, self.cluster.resulting_clustering)
 
 
-class Modularity():
+class Modularity:
     """
     Метрика оценки modularity.
     """
@@ -34,14 +37,14 @@ class Modularity():
         """
         self.__cluster = clustering.cluster     # объект класс Cluster.Cluster
         self.__number_of_clusters = max(clustering.cluster.resulting_clustering) + 1    # количество кластеров
-        self.__e = np.zeros(self.__number_of_clusters)  #
-        self.__a = np.zeros(self.__number_of_clusters)
-        self.__elementary_graph = clustering.elementary_graph
-        self.__total_number_of_edges = 0
+        self.__e = np.zeros(self.__number_of_clusters)  # количество дуг внутри кластера для каждого кластера
+        self.__a = np.zeros(self.__number_of_clusters)  # количество дуг исходящих из кластера для каждого кластера
+        self.__elementary_graph = clustering.elementary_graph   # список смежности графа
+        self.__total_number_of_edges = 0    # общее количество ребер
 
     def __calculate_cluster_edge(self):
         """
-        Подсчет общего кол-ва ребер, e, a для каждого кластера
+        Подсчет общего кол-ва ребер, self.__e, self.__a для каждого кластера
         """
         for i in range(len(self.__elementary_graph)):
             for j in self.__elementary_graph[i]:

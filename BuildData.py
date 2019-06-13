@@ -1,3 +1,6 @@
+"""
+Построение графиков на основе результатов кластеризации
+"""
 import Cluster
 import Clustering
 import Metrics
@@ -42,11 +45,12 @@ def find_position_of_max_value_of_metric(value_of_metric):
     return [x for x in range(len(value_of_metric)) if value_of_metric[x] == mx][0]
 
 
-def build_point(value_of_metric, objects):
+def build_point(value_of_metric, objects, name_of_metric):
     """
     Построение разбиения точек на кластеры
     :param value_of_metric: значение метрики
     :param objects: объект класса алгоритма кластеризации
+    :param name_of_metric: название метрики оценки качества кластеризации
     :return: None
     """
-    objects.cluster.view(title=str(objects) + " ARI = {0:.2f}".format(value_of_metric))
+    objects.cluster.view(title=str(objects) + " {0} = {1:.2f}".format(name_of_metric, value_of_metric))
