@@ -38,7 +38,7 @@ def distance_great_circle(point1, point2):
     :param point2: долгота, широта второй точки
     :return: расстояние между двумя точками
     """
-    return distance.great_circle((point1[0], point1[1]), (point2[0], point2[1])).km * 1000
+    return distance.great_circle((point1[1], point1[0]), (point2[1], point2[0])).km * 1000
 
 
 def distance_between_1st_coord_great_circle(point1, point2):
@@ -48,7 +48,7 @@ def distance_between_1st_coord_great_circle(point1, point2):
     :param point2: долгота, широта второй точки
     :return: расстояние между двумя вершинами по первой координате
     """
-    return distance.great_circle((point1[0], 0), (point2[0], 0)).km * 1000
+    return distance.great_circle((0, point1[0]), (0, point2[0])).km * 1000
 
 
 class Clustering():
@@ -344,7 +344,6 @@ class K_MXTGauss(K_MXT):
         :param x: расстояние между двумя точками
         :return: значение функции для заданного x
         """
-
         return 1 / (self.sigma * np.sqrt(np.pi * 2)) * np.exp(-x ** 2 / (2 * self.sigma ** 2))
 
     def _weight(self, v, u):

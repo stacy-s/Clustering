@@ -54,6 +54,7 @@ class Cluster:
             if len(r_hex) < 2:
                 return '0' + r_hex
             return r_hex
+        random.seed(10)
         cnt_clusters = max(self.resulting_clustering) + 1
         colors_of_clusters = np.full(cnt_clusters, '0000000')
         for i in range(cnt_clusters):

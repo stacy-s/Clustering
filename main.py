@@ -52,28 +52,36 @@ def build_plot_metrics_eps(k, eps: np.ndarray, algorithm_clustering, metric, clu
 
 
 def main():
-    data = [make_moons(n_samples=200, noise=0.05, random_state=0),
-            make_circles(n_samples=200, noise=0.05, random_state=0, factor=0.4),
-            make_blobs(n_samples=200, random_state=0, cluster_std=0.5),
-            make_blobs(n_samples=200, random_state=170, cluster_std=[1.0, 1.5, 0.5])]  # наборы данных
-
-    # Запуск алгоритма k-MXT для всех указанных значений k и eps для каждого набора данных.
-    # Построение графика зависимости метрики ARI от значений eps для каждого k.
-    # Отрисовка лучшего разбиения на кластеры для каждого k.
-    for points, correct_clustering in data:
-        d = Cluster.Cluster(points, correct_clustering)
-        for k in range(1, 13):
-            build_plot_metrics_eps(k, np.arange(0.1, 4.1, 0.1), Clustering.K_MXT, Metrics.ARI, d)
-            build_plot_metrics_eps(k, np.arange(0.1, 4.1, 0.1), Clustering.K_MXTGauss, Metrics.ARI, d)
-
-    # Кластеризация данных для города Санкт-Петербурга при заданных значениях параметров k и eps.
+    # data = [make_moons(n_samples=200, noise=0.05, random_state=0),
+    #         make_circles(n_samples=200, noise=0.05, random_state=0, factor=0.4),
+    #         make_blobs(n_samples=200, random_state=0, cluster_std=0.5),
+    #         make_blobs(n_samples=200, random_state=170, cluster_std=[1.0, 1.5, 0.5])]  # наборы данных
+    #
+    # # Запуск алгоритма k-MXT для всех указанных значений k и eps для каждого набора данных.
+    # # Построение графика зависимости метрики ARI от значений eps для каждого k.
+    # # Отрисовка лучшего разбиения на кластеры для каждого k.
+    # for points, correct_clustering in data:
+    #     d = Cluster.Cluster(points, correct_clustering)
+    #     for k in range(1, 13):
+    #         build_plot_metrics_eps(k, np.arange(0.1, 4.1, 0.1), Clustering.K_MXT, Metrics.ARI, d)
+    #         build_plot_metrics_eps(k, np.arange(0.1, 4.1, 0.1), Clustering.K_MXTGauss, Metrics.ARI, d)
+    #
+    # # Кластеризация данных для города Санкт-Петербурга при заданных значениях параметров k и eps.
     d = Cluster.ClusterGreatCircles('~/documents/diplom/', 'geoflickr_spt.csv')
-    for k in [7, 8, 10, 12]:
-        for eps in [25, 50, 70]:
+    for k in [7]:
+        for eps in [50]:
             c = Clustering.K_MXTGreatCircle(eps, k, d)
             c()
+            m = Metrics.Modularity(c)
+            print('k-MXT ', m(), k, eps)
             c.cluster.view_at_map(latitude=59.93863, longitude=30.31413,
-                                  filename_of_map="{0}-MXT-eps{1}".format(k, eps))
+                                  filename_of_map=f'{k}-MXT-eps{eps}')
+            c = Clustering.K_MXTGaussGreatCircle(eps, k, d)
+            c()
+            c.cluster.view_at_map(latitude=59.93863, longitude=30.31413,
+                                  filename_of_map=f'{k}-MXTGauss-eps{eps}')
+            m = Metrics.Modularity(c)
+            print('Gauss ', m(), k, eps)
 
 
 
