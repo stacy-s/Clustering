@@ -1,5 +1,5 @@
 """
-Модуль алгоритмов кластеризации
+Module clustering algorithms
 """
 import numpy as np
 import math
@@ -13,75 +13,78 @@ EPS = 1e-9
 
 def distance2d(point1, point2):
     """
-    Функция подсчета расстояния между двумя точками в декартовой системе координат.
-    :param point1: координаты по x, y первой точки
-    :param point2: координаты по x, y второй точки
-    :return: расстояние между двумя точками
+    The function of calculating the distance between two points in the Cartesian coordinate system.
+    :param point1: x, y coordinates of the first point
+    :param point2: x, y coordinates of the second point
+    :return: distance between two points
     """
     return math.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
 
 
 def distance_between_1st_coord2d(point1, point2):
     """
-    Функция подсчета расстояния между двумя точками в декартовой системе координат с учетом только первой координаты.
-    :param point1: координаты по x, y первой точки
-    :param point2: координаты по x, y второй точки
-    :return: расстояние между двумя вершинами по первой координате
+    The function of calculating the distance between two points in the Cartesian coordinate system,
+    taking into account only the first coordinate
+    :param point1: x, y coordinates of the first point
+    :param point2: x, y coordinates of the second point
+    :return: distance between two vertices on the first coordinate
     """
     return abs(point1[0] - point2[0])
 
 
 def distance_great_circle(point1, point2):
     """
-    Функция подсчета расстояния между двумя точками на поверхности Земли.
-    :param point1: долгота, широта первой точки
-    :param point2: долгота, широта второй точки
-    :return: расстояние между двумя точками
+    The function of calculating the distance between two points on the surface of the Earth
+    :param point1: longitude, latitude of the first point
+    :param point2: longitude, latitude of the second point
+    :return: distance between two points
     """
     return distance.great_circle((point1[1], point1[0]), (point2[1], point2[0])).km * 1000
 
 
 def distance_between_1st_coord_great_circle(point1, point2):
     """
-    Функция подсчета расстояния между двумя точками на поверхности Земли с учетом только первой координаты.
-    :param point1: долгота, широта первой точки
-    :param point2: долгота, широта второй точки
-    :return: расстояние между двумя вершинами по первой координате
+    The function of calculating the distance between two points on the surface of the Earth,
+    taking into account only the first coordinate.
+    :param point1: longitude, latitude of the first point
+    :param point2: longitude, latitude of the second point
+    :return: distance between two vertices on the first coordinate
     """
     return distance.great_circle((0, point1[0]), (0, point2[0])).km * 1000
 
 
 class Clustering():
     """
-    Базовый класс алгоритма кластеризации графа
+    The base class of the cluster clustering algorithm
     """
 
     def __init__(self, eps, cluster: Cluster.Cluster):
         """
-        Конструктор
-        :param eps: расстояние. Точки находящиеся на расстояние не превосходящим eps будут соединяться ребром
-        :param cluster: объект класса Cluster.Cluster, с информацией о точках
+        Constructor
+        :param eps: distance. Points located at a distance not exceeding eps will be connected by an edge.
+        :param cluster: object of class Cluster.Cluster, with information about points
         """
         self.eps = eps
         self.cluster = copy.deepcopy(cluster)
-        self.number_of_vertices = self.cluster.coord_of_points.shape[0]  # кол-во вершин графа
-        self._default_cluster_number = 0  # начальное значение номера кластера
+        self.number_of_vertices = self.cluster.coord_of_points.shape[0]  # number of vertices of the graph
+        self._default_cluster_number = 0  # the initial value of the cluster number
         self.cluster.resulting_clustering = np.full(self.number_of_vertices, self._default_cluster_number)
-        # результат кластеризации
-        self._distance = distance2d  # функция подсчета расстояния (для декартовой системы координат)
-        self.elementary_graph = None  # начальный граф
+        # clustering result
+        self._distance = distance2d  # distance calculation function (for Cartesian coordinate system)
+        self.elementary_graph = None  # initial graph
         self._distance_between_1st_coord = \
-            distance_between_1st_coord2d  # функция подсчета расстояния по координате x (декартовая системы координат)
+            distance_between_1st_coord2d  # the function of counting the distance along the x coordinate
+        # (Cartesian coordinate system)
 
     def _left_binary_search(self, left, right, x):
         """
-        Бинарный поиск для поиска самой левой (первой) подходящей точки,
-        для которой расстояние по первой координате до заданной точки (x) не привосходит eps
-        :param left: левая граница начала поиска
-        :param right: правая граница наччала поиска
-        :param x: номер точки, для которой нужно найти левую границу
-        :return: номер самой первой (левой) точки,
-            для которой расстояние по первой координате по x не превосходит eps
+        Binary search to find the leftmost (first) matching point,
+        for which the distance in the first coordinate to a given point (x) does not fit eps.
+        :param left: left limit of the start of the search
+        :param right: right edge of the start of the search
+        :param x: the number of the point for which you want to find the left border
+        :return: the number of the very first (left) point,
+            for which the distance along the first coordinate in x does not exceed eps
         """
         lf = left - 1
         rg = right
@@ -96,13 +99,13 @@ class Clustering():
 
     def _right_binary_search(self, left, right, x):
         """
-        Бинарный поиск для поиска самой правой (последней) подходящей точки,
-        для которой расстояние по первой координате до заданной точки (x) не привосходит eps
-        :param left: левая граница начала поиска
-        :param right: правая граница наччала поиска
-        :param x: номер точки, для которой нужно найти правую границу
-        :return: номер самой последней (правой) точки,
-            для которой расстояние по первой координате по x не превосходит eps
+        Binary search to find the rightmost (last) matching point
+        for which the distance in the first coordinate to a given point (x) does not fit eps
+        :param left: left limit of the start of the search
+        :param right: right edge of the start of the search
+        :param x: the number of the point for which you want to find the right border
+        :return: the number of the most recent (right) point
+            for which the distance along the first coordinate in x does not exceed eps
         """
         lf = left
         rg = right + 1
@@ -117,9 +120,9 @@ class Clustering():
 
     def _vertex_neighbor_list(self, vertex):
         """
-        Находит всех соседей заданной вершины
-        :param vertex: вершина, для которй нужно найти всех соседей
-        :return: np.array всех соседей верины vertex
+        Finds all neighbors of a given vertex
+        :param vertex: the top for which you need to find all the neighbors
+        :return: np.array all neighbors vertex
         """
         neighbor = []
         left = self._left_binary_search(0, vertex, vertex)
@@ -132,8 +135,8 @@ class Clustering():
 
     def _make_elementary_graph(self):
         """
-        Построение графа, в которой расстояние между двумя вершина не перевосходит eps.
-        :return: список смежности (список массивов numpy), полученного графа.
+        Constructing a graph in which the distance between two vertices does not exceed eps.
+        :return: adjacency list (list of numpy arrays) obtained graph
         """
         graph = [np.array([]) for _ in range(self.number_of_vertices)]
         for v in range(self.number_of_vertices):
@@ -142,9 +145,9 @@ class Clustering():
 
     def counting_number_of_elements_in_list(self, lst):
         """
-        Подсчет количества элементов в двумерном списке
-        :param lst: список двумерный
-        :return: количество элементов в списке
+        Counting the number of items in a two-dimensional list
+        :param lst: two-dimensional list
+        :return: number of items in the list
         """
         number_of_elements = 0
         for i in range(len(lst)):
@@ -153,32 +156,33 @@ class Clustering():
 
     def counting_number_of_arcs_in_elementary_graph(self):
         """
-        Подсчет количества дуг в начальном графе
-        :return: количество дуг в начальном графе
+        Counting the number of arcs in the initial graph
+        :return: the number of arcs in the initial graph
         """
         return self.counting_number_of_elements_in_list(self.elementary_graph)
 
+
 class K_MXT(Clustering):
     """
-    Алгоритм кластеризации k-MXT для точек в декартовой системе координат.
+    The k-MXT clustering algorithm for points in the Cartesian coordinate system.
     """
 
     def __init__(self, eps, k, cluster: Cluster.Cluster):
         """
-        Конструктор
-        :param eps: расстояние. Точки находящиеся на расстояние не превосходящим eps будут соединяться ребром
-        :param k: значение параметра k. Не более k исходящих дуг останется из каждой вершины
-        :param cluster: объект класса Cluster.Cluster, с информацией о точках
+        Constructor
+        :param eps: distance. Points located at a distance not exceeding eps will be connected by an edge
+        :param k: the value of the parameter k. No more than k outgoing arcs will remain from each vertex.
+        :param cluster: object of class Cluster.Cluster, with information about points
         """
         np.random.seed(4000)
         super().__init__(eps, cluster)
         self.k = k
-        self.graph_consists_of_k_arcs = None  # граф в  не более, чем k исходящими дугами из одной вершины
-        self.binary_representation_of_elementary_graph = None  # бинарная матрица смежности начального графа
+        self.graph_consists_of_k_arcs = None  # graph in no more than k outgoing arcs from one vertex
+        self.binary_representation_of_elementary_graph = None  # binary adjacency matrix of the initial graph
 
     def _build_binary_elementary_graph(self):
         """
-        Построение бинарной матрицы смежности начального графа
+        Construction of a binary adjacency matrix of the initial graph
         :return: None
         """
         self.binary_representation_of_elementary_graph = np.zeros((self.number_of_vertices, self.number_of_vertices),
@@ -189,19 +193,19 @@ class K_MXT(Clustering):
 
     def _weight(self, v, u):
         """
-        Подсчет веса дуги из v в u
-        :param v: первая вершина
-        :param u: вторая вершина
-        :return: вес дуги (v, u)
+        Counting arc weight from v to u.
+        :param v: first vertex
+        :param u: second vertex
+        :return: arc weight (v, u)
         """
         return np.sum(self.binary_representation_of_elementary_graph[v] *
                       self.binary_representation_of_elementary_graph[u])
 
     def _counting_weights_of_neighbors(self, v):
         """
-        Подсчет весов дуг из вершины v до всех соседей этой вершины
-        :param v: вершина, для которой считается веса всех исходящих дуг
-        :return:
+        Counting weights of arcs from vertex v to all neighbors of this vertex
+        :param v: the vertex for which the weights of all outgoing arcs are considered
+        :return: the weight of all arcs emanating from the vertex v
         """
         cnt_neighbor = self.elementary_graph[v].shape[0]
         cnt_information = 2
@@ -213,18 +217,18 @@ class K_MXT(Clustering):
 
     def _choose_k_arcs(self, v):
         """
-        Выбор не более k исходящих дуг из вершины v.
-        Дуги выбираются по наибольшему весу.
-        При одинаковом весе дуги выбираются случайно.
-        :param v: вершина, для которой выбираются дуги
-        :return: список исходящих вершин
+        The choice of no more than k outgoing arcs from the vertex v.
+        Arcs are selected by the greatest weight.
+        With the same weight, the arcs are chosen randomly.
+        :param v: vertex for which arcs are selected
+        :return: list of outgoing vertices
         """
 
         def sorting_weight_in_descending_order(weights):
             """
-            Сортировка вершин в невозрастающем порядке весов
-            :param weights:  numpy массив из весов вершин и номеров вершин
-            :return: отсортированный массив врешин
+            Sort vertices in non-increasing order of weights.
+            :param weights: numpy array of vertex weights and vertex numbers
+            :return: sorted array of vertices
             """
             index = weights[:, 0].argsort()
             weights = weights[index]
@@ -233,10 +237,10 @@ class K_MXT(Clustering):
 
         def get_weights_more_than_k_position(weights, k):
             """
-            Выбор вершин с весами большими, чем с весом на позиции k - 1 в массиве weights
-            :param weights: numpy массив из весов вершин и номеров вершин
-            :param k: кол-во вершин, которое нужно взять. k не привосходит размера массива weights
-            :return: номера выбранных вершин
+            Selection of vertices with weights greater than with weights at position k - 1 in the weights array
+            :param weights: numpy array of vertex weights and vertex numbers
+            :param k: number of vertices to take. k does not exceed the size of the weights array
+            :return: numbers of selected vertices
             """
             if k == 0:
                 return np.array([])
@@ -247,11 +251,11 @@ class K_MXT(Clustering):
 
         def get_weights_equal_k_position(weights, need2add, k):
             """
-            Выбор вершин с одинаковыми весами.
-            :param weights: numpy массив из весов вершин и номеров вершин
-            :param need2add: количество вершин, которые нужно получить,
-            :param k: общее кол-во вершин, которое нужно взять
-            :return: нужное количество номеров вершин с одинаковыми весами
+            Select vertices with the same weights
+            :param weights: numpy array of vertex weights and vertex numbers
+            :param need2add: the number of vertices you need to get
+            :param k: total number of vertices to take
+            :return: the required number of vertex numbers with the same weights
             """
             if k == 0:
                 return np.array([])
@@ -272,7 +276,7 @@ class K_MXT(Clustering):
 
     def _build_graph_consists_of_k_arcs(self):
         """
-        Построение графа, в котором не более k исходящих дуг.
+        Construction of a graph in which no more than k outgoing arcs
         :return: None
         """
         self.graph_consists_of_k_arcs = [[] for _ in range(self.number_of_vertices)]
@@ -281,16 +285,16 @@ class K_MXT(Clustering):
 
     def counting_number_of_arcs_in_graph_consists_of_k_arcs(self):
         """
-        Подсчет количества дуг в графе, в котором не более k исходящих дуг.
-        :return: количество дуг в графе, в котором не более k исходящих дуг
+        Counting the number of arcs in a graph in which no more than k outgoing arcs
+        :return: the number of arcs in the graph in which no more than k outgoing arcs
         """
         return self.counting_number_of_elements_in_list(self.graph_consists_of_k_arcs)
 
     def __call__(self):
         """
-        Построение начального графа.
-        Построение графа с количеством исходящих дуг не более k
-        Выделение компонет сильной связанности полученного графа с не более k исходящими дугами (выделение кластеров)
+        Construction of the initial graph.
+        Building a graph with the number of outgoing arcs not more than k
+        Selection of components of strong connectivity of the resulting graph with at most k outgoing arcs (selection of clusters)
         :return:  None
         """
         self.elementary_graph = self._make_elementary_graph()
@@ -301,79 +305,82 @@ class K_MXT(Clustering):
         self.cluster.resulting_clustering = g()
 
     def __str__(self):
-        """Получение строковой информации об объекте."""
+        """Getting string information about the object"""
         return "{0}-MXT, eps = {1:.1f}".format(self.k, self.eps)
 
 
 class K_MXTGreatCircle(K_MXT):
     """
-    Класс алгоритма k-MXT для точек на поверхности шара
+    Algorithm class k-MXT for points on the surface of the Earth
     """
 
     def __init__(self, eps, k, cluster: Cluster.Cluster):
         """
-        Конструктор
-        :param eps: расстояние. Точки находящиеся на расстояние не превосходящим eps будут соединяться ребром
-        :param k: значение параметра k. Не более k исходящих дуг останется из каждой вершины
-        :param cluster: объект класса Cluster.Cluster, с информацией о точках
+        Constructor
+        :param eps: distance. Points located at a distance not exceeding eps will be connected by an edge
+        :param k: the value of the parameter k. No more than k outgoing arcs from each vertex
+        :param cluster: object of class Cluster.Cluster, with information about points
         """
         K_MXT.__init__(self, eps, k, cluster)
-        self._distance = distance_great_circle  # функция подсчета расстояния между двумя точками на поверхности шара
+        self._distance = distance_great_circle  # the function of calculating the distance between two points
+        # on the surface of the Earth.
         self._distance_between_1st_coord = \
-            distance_between_1st_coord_great_circle  # функция подсчета расстояния по долготе (на повехности Земли)
+            distance_between_1st_coord_great_circle  # longitude distance counting function (on the surface of the
+        # Earth)
 
 
 class K_MXTGauss(K_MXT):
     """
-    Класс алгоритма k-MXT-Gauss для точек в декартовой системе координат
+    The class of the k-MXT-Gauss algorithm for points in the Cartesian coordinate system
     """
-
     def __init__(self, eps, k, cluster: Cluster.Cluster):
         """
-        Конструктор
-        :param eps: расстояние. Точки находящиеся на расстояние не превосходящим eps будут соединяться ребром
-        :param k: значение параметра k. Не более k исходящих дуг останется из каждой вершины
-        :param cluster: объект класса Cluster.Cluster, с информацией о точках
+        Constructor
+        :param eps: distance. Points located at a distance not exceeding eps will be connected by an edge
+        :param k: the value of the parameter k. No more than k outgoing arcs from each vertex
+        :param cluster: object of class Cluster.Cluster, with information about points
         """
         super().__init__(eps, k, cluster)
-        self.sigma = eps / 3  # стандартное отклонение плотности распределения Гаусса
+        self.sigma = eps / 3  # Gaussian distribution density standard deviation
 
     def gauss(self, x):
         """
-        Функция подсчета плотности распределения Гаусса при заданном x (расстояние между двумя точками)
-        :param x: расстояние между двумя точками
-        :return: значение функции для заданного x
+        The function of calculating the density of the Gaussian distribution at a given x
+        (the distance between two points)
+        :param x: distance between two points
+        :return: the value of the function for the given x
         """
         return 1 / (self.sigma * np.sqrt(np.pi * 2)) * np.exp(-x ** 2 / (2 * self.sigma ** 2))
 
     def _weight(self, v, u):
         """
-        Функция посчета весов дуги (v, u)
-        :param v: первая вершина
-        :param u: вторая вершина
-        :return: вес дуги (v, u)
+        The function of counting the weights of the arc (v, u)
+        :param v: first peak
+        :param u: second peak
+        :return: arc weight (v, u)
         """
         dist = self._distance(self.cluster.coord_of_points[v], self.cluster.coord_of_points[u])
         return self.gauss(dist) * super()._weight(v, u)
 
     def __str__(self):
-        """Получение строковой информации об объекте."""
+        """Getting string information about the object"""
         return "{0}-MXT-Gauss, eps = {1:.1f}".format(self.k, self.eps)
 
 
 class K_MXTGaussGreatCircle(K_MXTGauss):
     """
-        Класс алгоритма k-MXT-Gauss для точек на поверхности Земли
-        """
-
+    Algorithm class k-MXT-Gauss for points on the surface of the Earth
+    """
     def __init__(self, eps, k, cluster: Cluster.Cluster):
         """
-        Конструктор
-        :param eps: расстояние. Точки находящиеся на расстояние не превосходящим eps будут соединяться ребром
-        :param k: значение параметра k. Не более k исходящих дуг останется из каждой вершины
-        :param cluster: объект класса Cluster.Cluster, с информацией о точках
+        Constructor
+        :param eps: distance. Points located at a distance not exceeding eps will be connected by an edge
+        :param k: the value of the parameter k. No more than k outgoing arcs from each vertex
+        :param cluster: object of class Cluster.Cluster, with information about points
         """
         K_MXTGauss.__init__(self, eps, k, cluster)
-        self._distance = distance_great_circle  # функция подсчета расстояния между двумя точками на поверхности шара
+        self._distance = distance_great_circle  # the function of calculating the distance between
+        # two points on the surface of the ball
         self._distance_between_1st_coord = \
-            distance_between_1st_coord_great_circle  # функция подсчета расстояния по долготе (на повехности Земли)
+            distance_between_1st_coord_great_circle  # the function of calculating the distance in longitude
+        # (on the surface of the Earth)

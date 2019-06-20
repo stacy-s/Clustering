@@ -1,35 +1,36 @@
 """
-Модуль алгоритмов из теории графов
+The module of algorithms from graph theory
 """
 import numpy as np
 
 
 class FirstSearch():
-    """Базовый класс обходов графа"""
+    """The base class of traversal graph"""
     def __init__(self, number_of_vertices, list_of_adjacent_edges_of_graph):
         """
-        Конструктор
-        :param number_of_vertices:  количество вершин в графе
-        :param list_of_adjacent_edges_of_graph: список смежности графа
+        Constructor
+        :param number_of_vertices:  number of vertices of the graph
+        :param list_of_adjacent_edges_of_graph: graph adjacency list
         """
         self.number_of_vertices = number_of_vertices
         self.list_of_adjacent_edges_of_graph = list_of_adjacent_edges_of_graph
         self._used = \
-            [False for _ in range(self.number_of_vertices)]    # массив, показывающий была ли вершина обработана
+            [False for _ in range(self.number_of_vertices)]    # an array indicating whether the vertex was processed
 
 
 class TopologicalSort(FirstSearch):
     """
-    Класс топологической сортировки
+    Topological sorting class
     """
     def __init__(self, number_of_vertices, list_of_adjacent_edges_of_graph):
         super().__init__(number_of_vertices, list_of_adjacent_edges_of_graph)
-        self.order_topological_sort = []    # список вершин в порядке топологической сортировки
+        self.order_topological_sort = []    # list of vertices in topological sort order
 
     def _topological_sort_from_start_vertex(self, v):
         """
-        Построение топологической сортировки (обход в глубину с сохранением времени окончания обработки вершин)
-        :param v: вершина, из которой начинается обход на данном этапе
+        Construction of topological sorting
+        (detour into depth with preservation of the time of the end of processing of vertices)
+        :param v: the vertex from which the traversal starts at this stage
         :return: None
         """
         self._used[v] = True
@@ -40,7 +41,7 @@ class TopologicalSort(FirstSearch):
 
     def _run(self):
         """
-        Запуск топологической сортировки из непосещенных вершин
+        Run topological sorting from unvisited vertices
         :return: None
         """
         for v in range(self.number_of_vertices):
@@ -48,33 +49,33 @@ class TopologicalSort(FirstSearch):
                 self._topological_sort_from_start_vertex(v)
 
 
-
     def __call__(self):
-        """Построение топологической сортировки из всех вершин графа"""
+        """Construction of topological sorting from all vertices of the graph"""
         self._run()
 
 
 class StronglyConnectedComponent(TopologicalSort):
     """
-    Класс поиска компонет сильной связности ориентированного графа.
+    Search class of components of strong connectedness of a directed graph
     """
     def __init__(self, number_of_vertices, list_of_adjacent_edges_of_graph, default_cluster_number):
         """
-        Конструктор
-        :param number_of_vertices: количество вершин графа
-        :param list_of_adjacent_edges_of_graph: список смежности графа
-        :param default_cluster_number: номер кластера по умолчанию
+        Constructor
+        :param number_of_vertices: number of vertices of the graph
+        :param list_of_adjacent_edges_of_graph: graph adjacency list
+        :param default_cluster_number: default cluster number
         """
         super().__init__(number_of_vertices, list_of_adjacent_edges_of_graph)
-        self.list_of_adjacent_edges_of_transposed_graph = None  # список смежности транспонированного графа
+        self.list_of_adjacent_edges_of_transposed_graph = None  # adjacency list of transposed graph
         self.default_cluster = default_cluster_number
         self.numbers_of_connected_component = \
-            [self.default_cluster for _ in range(self.number_of_vertices)]  # номера компонет сильной связности графа
+            [self.default_cluster for _ in range(self.number_of_vertices)]  # numbers of components of
+                                                                            # strongly connected graph
 
     def __build_transposed_graph(self):
         """
-        Построение транспонированного графа
-        :return: список смежности транспонированного графа
+        Construction of the transposed graph
+        :return: adjacency list of transposed graph
         """
         self.list_of_adjacent_edges_of_transposed_graph = [[] for i in range(self.number_of_vertices)]
         for v in range(self.number_of_vertices):
@@ -84,9 +85,9 @@ class StronglyConnectedComponent(TopologicalSort):
 
     def dfs(self, v, number_of_connected_component):
         """
-        Обход в глубину из вершины v
-        :param v: вершина, из которой запускается обход в глубину на данном этапе
-        :param number_of_connected_component: номер компонетны сильной связности текущей вершины
+        DFS from vertex v
+        :param v: the vertex from which the depth to depth is started at this stage
+        :param number_of_connected_component: The number of components is strongly connected with the current vertex
         :return: None
         """
         self.numbers_of_connected_component[v] = number_of_connected_component
@@ -96,7 +97,7 @@ class StronglyConnectedComponent(TopologicalSort):
 
     def find_connected_component(self):
         """
-        Поиск компонет сильной связности для каждой вершины графа
+        Search for strongly connected components for each vertex of the graph
         :return: None
         """
         number_of_connected_component = self.default_cluster + 1
@@ -107,9 +108,9 @@ class StronglyConnectedComponent(TopologicalSort):
 
     def __call__(self):
         """
-        Постороение топологической сортировки графа
-        Поиск компонет сильной связности графа
-        :return:
+        Construction of topological sorting of the graph
+        Search components of the strong connectedness of the graph
+        :return: numbers of components strongly connected of graph
         """
         super()._run()
         self.__build_transposed_graph()

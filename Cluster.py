@@ -1,7 +1,7 @@
 """
-Модуль кластеров.
-Классы содержат координаты точек, правильную кластеризацию, если она известна, полученную кластеризацию.
-Выполняется отрисовка кластеров.
+Cluster module.
+Classes contain the coordinates of points, proper clustering, if known, the resulting clustering.
+Clusters are being rendered.
 """
 import numpy as np
 import pandas as pd
@@ -13,15 +13,15 @@ import matplotlib.pyplot as plt
 
 class Cluster:
     """
-    Класс объекта кластер для данных в декартовой системе координат.
+    The class of the cluster object for the coordinates specified in the Cartesian system.
     """
     def __init__(self, coords_of_points: np.ndarray, right_clustering: np.ndarray, resulting_clustering=None):
         """
-        Конструктор
-        :param coords_of_points: координаты точек для кластеризации в двумерной системе координат.
-            В функции будет отсортированы с помощью функции __sort
-        :param right_clustering: правильное разбиение точек на кластеры
-        :param resulting_clustering: полученная кластеризация, по умолчанипю None
+        Constructor
+        :param coords_of_points: coordinates of points for clustering in a two-dimensional coordinate system.
+            The function will be sorted using the function __sort
+        :param right_clustering: proper splitting of points into clusters
+        :param resulting_clustering: clustering obtained, default is None
         """
         if resulting_clustering is None:
             resulting_clustering = []
@@ -31,11 +31,11 @@ class Cluster:
 
     def __sort(self, coords_of_points, right_clustering):
         """
-        Сортирует точки (массивы coords_of_points, right_clustering)  в порядке увеличения первой координаты,
-        при равенстве первой координаты  в порядке увеличения второй коодинаты точки
-        :param coords_of_points: координаты точек для кластеризации в двумерной системе координат
-        :param right_clustering: правильное разбиение точек на кластеры
-        :return: отсортированные массивы coords_of_points, right_clustering
+        Sorts points (arrays coords_of_points, right_clustering) in order of increasing the first coordinate,
+        with the equality of the first coordinate in the order of increasing the second coordinate of the point
+        :param coords_of_points: coordinates of points for clustering in a two-dimensional coordinate system
+        :param right_clustering: proper splitting of points into clusters
+        :return: sorted arrays coords_of_points, right_clustering
         """
         index = coords_of_points[:, 0].argsort()
         coords_of_points = coords_of_points[index]
@@ -45,7 +45,7 @@ class Cluster:
 
     def _make_colors_of_clusters(self):
         """
-        Определение цвета для каждого класстера
+        Definition of color for each cluster
         """
         def rand_color():
             r = random.randint(0, 165)
@@ -63,9 +63,10 @@ class Cluster:
 
     def view(self, title='', figsize=(7, 7)):
         """
-        Функция рисования точек на координатной прямой. Одинаковым цветом помечаются точки, относящиеся к одному кластеру
-        :param title: подпись к графику
-        :param figsize: размер графика
+        The function of drawing points on the coordinate line.
+        Dots belonging to the same cluster are marked with the same color.
+        :param title: caption to the chart
+        :param figsize: graphic size
         :return: None
         """
         colors_of_clusterts = self._make_colors_of_clusters()
@@ -82,7 +83,7 @@ class Cluster:
         plt.show()
 
     def __str__(self):
-        """Получение строковой информации об объекте."""
+        """Getting string information about the object"""
         return "coord_of_points: {0}\n" \
                "right_clustering: {1}\n" \
                "resulting_clustering:{2}".format(self.coord_of_points, self.right_clustering, self.resulting_clustering)
@@ -90,15 +91,15 @@ class Cluster:
 
 class ClusterGreatCircles(Cluster):
     """
-        Класс объекта кластер для данных на поверхности шара.
+    Class object cluster for data on the surface of the ball.
     """
     def __init__(self, filepath, filename,  resulting_clustering=None):
         """
-        Конструктор
-        :param filepath: путь до файла с долготами и широтами точек на поверхности Земли.
-        :param filename: имя файла с расшинением .csv. Файл досжен содержать столбцы
-            longitude (догота), latitude (широта), owner (владелец)
-        :param resulting_clustering: полученная кластеризация, по умолчанипю None
+        Constructor
+        :param filepath: path to the file with longitudes and latitudes of points on the Earth's surface.
+        :param filename: filename with .csv expansion. File must contain columns
+             longitude (dogot), latitude (latitude), owner (owner)
+        :param resulting_clustering: clustering obtained, default is None
         """
 
         self.filepath = filepath
@@ -108,8 +109,8 @@ class ClusterGreatCircles(Cluster):
 
     def __load(self):
         """
-        Загружает данные из заданного пути (self.filepath + self.filename).
-        Оставляет только первое вхождение записи с одинаковыми longitude, latitude, owner
+        Loads data from the specified path (self.filepath + self.filename).
+        It leaves only the first entry of the record with the same longitude, latitude, owner
         :return: coords_of_points
         """
         df = pd.read_csv(self.filepath + self.filename)
@@ -123,7 +124,7 @@ class ClusterGreatCircles(Cluster):
 
     def _make_colors_of_clusters(self, default_cluster_number):
         """
-            Определение цвета для каждого класстера
+        Definition of color for each cluster
         """
         colors_of_clusters = super()._make_colors_of_clusters()
         red = "#FF0000"
@@ -136,13 +137,13 @@ class ClusterGreatCircles(Cluster):
 
     def view_at_map(self, latitude, longitude, filename_of_map, default_cluster_number=0):
         """
-        Сохраняет файл с расширением .html, в котором нарисованы точки на карте города.
-        Одинаковым цветом помечаются точки, принадлежашие одному и тому же кластеру.
-        Красным цветом обозначается точки, являющиеся шумами.
-        :param latitude: широта города
-        :param longitude: долгота города
-        :param filename_of_map: имя файла, полученной карты (без расширения)
-        :param default_cluster_number: номер кластера по умолчанию
+        Saves a file with the .html extension in which points are drawn on the city map.
+        Dots belonging to the same cluster are marked with the same color.
+        Red color indicates points that are noises.
+        :param latitude: city latitude
+        :param longitude: city longitude
+        :param filename_of_map: the name of the file received map (without extension)
+        :param default_cluster_number: default cluster number
         :return: None
         """
         fmap = folium.Map([latitude, longitude])
@@ -162,5 +163,5 @@ class ClusterGreatCircles(Cluster):
 
 
     def __str__(self):
-        """Получение строковой информации об объекте."""
+        """Getting string information about the object."""
         return "filename: {0}\n".format(self.filename) + super().__str__()

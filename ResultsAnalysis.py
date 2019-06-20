@@ -2,7 +2,6 @@ import Cluster
 import Clustering
 import Metrics
 import numpy as np
-import BuildData
 from sklearn.datasets import make_moons, make_blobs, make_circles
 import time
 
