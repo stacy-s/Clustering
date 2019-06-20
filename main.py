@@ -12,9 +12,9 @@ import functools
 def build_plot_metrics_eps(k, eps: np.ndarray, algorithm_clustering, metric, cluster: Cluster.Cluster, step=0.5,
                            is_show_time=False):
     """
-    Run the clustering algorithm for all specified eps parameter values ​​for some k value.
-    Illustration of the best clustering for a given k
-    Plotting the ARI metric against eps values
+    The function starts the clustering algorithm for all specified values of eps parameters for some value of k.
+    The function illustrates the best clustering result for a given k
+    The function builds a graph of the ARI metric versus eps values.
     :param k: k value
     :param eps: numpy array of eps values
     :param algorithm_clustering: clustering algorithm
@@ -54,27 +54,38 @@ def build_plot_metrics_eps(k, eps: np.ndarray, algorithm_clustering, metric, clu
 
 
 def run_experimental(k, eps):
+    """
+    The function performs an experiment for given values of the parameter k and eps.
+    :param k: the value of k
+    :param eps: the value of eps
+    :return: None
+    """
+
     data = [functools.partial(make_blobs, n_samples=200, cluster_std=0.5),
             functools.partial(make_blobs, n_samples=200, cluster_std=[1.0, 1.5, 0.5]),
             functools.partial(make_circles, n_samples=200, noise=0.05, factor=0.4),
             functools.partial(make_moons, n_samples=200, noise=0.05)]  # наборы данных
-    for i in range(len(data)):
+    for i in range(1):
         print(data[i].__str__())
         experimental_results = ResultsAnalysis.static_experiment(Metrics.ARI, 1000,
-                                                                 np.arange(1, 13), np.arange(0.1, 4.1, 0.1), data[i])
-        ResultsAnalysis.save_results(f"{data[i].func.__name__} {data[i].__str__()[data[i].__str__().find(',') + 2:-1]}",
+                                                                 k, eps, data[i])
+        ResultsAnalysis.save_results(f"{data[i].func.__name__} {data[i].__str__()[data[i].__str__().find(',') + 2:-1]} k={k} eps={eps}",
                                      experimental_results)
 
 
 def run_clustering_2d(k, eps):
+    """
+    The function starts the k-MXT and k-MXT-Gauss algorithm for all specified k and eps values for each data set.
+    The function builds a graph of the ARI metric versus eps values.
+    The function builds a graph of the ARI metric versus eps values.
+    :param k: the value of k
+    :param eps: the value of eps
+    :return: None
+    """
     data = [make_moons(n_samples=200, noise=0.05, random_state=0),
             make_circles(n_samples=200, noise=0.05, random_state=0, factor=0.4),
             make_blobs(n_samples=200, random_state=0, cluster_std=0.5),
-            make_blobs(n_samples=200, random_state=170, cluster_std=[1.0, 1.5, 0.5])]  # наборы данных
-
-    # Run the k-MXT algorithm for all specified k and eps values for each data set.
-    # Graphing the dependence of the ARI metric on eps values for each k.
-    # Drawing the best clustering for each k.
+            make_blobs(n_samples=200, random_state=170, cluster_std=[1.0, 1.5, 0.5])]  # datasets
     for points, ccorrect_clustering in data:
         d = Cluster.Cluster(points, ccorrect_clustering)
         for kk in k:
@@ -82,29 +93,39 @@ def run_clustering_2d(k, eps):
             build_plot_metrics_eps(kk, eps, Clustering.K_MXTGauss, Metrics.ARI, d)
 
 
-def run_clustering_city():
-    # Clustering data for the city of St. Petersburg for given values of the parameters k and eps.
-    d = Cluster.ClusterGreatCircles('./datasets/', 'geoflickr_spb_drop_duplicates.csv')
+def run_clustering_city(filepath, filename, k, eps, latitude, longitude):
+    """
+    The function clusters data for a given city and draws the result obtained on the map.
+    :param filepath: path of file .csv
+    :param filename: name of file .csv
+    :param k: the value of k
+    :param eps: the value of eps
+    :param latitude: latitude of city
+    :param longitude: longitude of city
+    :return: None
+    """
+    d = Cluster.ClusterGreatCircles(filepath, filename)
     for k in [7]:
         for eps in [50]:
             c = Clustering.K_MXTGreatCircle(eps, k, d)
             c()
             m = Metrics.Modularity(c)
-            print('k-MXT ', m(), k, eps)
-            c.cluster.view_at_map(latitude=59.93863, longitude=30.31413,
+            print(f'k-MXT k={k} eps={eps} Modularity={m()}')
+            c.cluster.view_at_map(latitude=latitude, longitude=longitude,
                                   filename_of_map=f'{k}-MXT-eps{eps}')
             c = Clustering.K_MXTGaussGreatCircle(eps, k, d)
             c()
-            c.cluster.view_at_map(latitude=59.93863, longitude=30.31413,
+            c.cluster.view_at_map(latitude=latitude, longitude=longitude,
                                   filename_of_map=f'{k}-MXTGauss-eps{eps}')
             m = Metrics.Modularity(c)
-            print('Gauss ', m(), k, eps)
+            print(f'k-MXT-Gauss k={k} eps={eps} Modularity={m()}')
 
 
 def main():
     # run_experimental(k=np.arange(1, 13), eps=np.arange(0.1, 4.1, 0.1))
-    # run_clustering_2d(k=np.arange(1, 13), eps=np.arange(0.1, 4.1, 0.1))
-    run_clustering_city()
+    run_clustering_2d(k=np.arange(1, 13), eps=np.arange(0.1, 4.1, 0.1))
+    run_clustering_city(filepath='./datasets/', filename='geoflickr_spb_drop_duplicates.csv',
+                        k=[7, 8, 10, 12], eps=[50, 70], latitude=59.93863, longitude=30.31413)
 
 
 if __name__ == '__main__':

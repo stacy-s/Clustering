@@ -31,8 +31,9 @@ class Cluster:
 
     def __sort(self, coords_of_points, right_clustering):
         """
-        Sorts points (arrays coords_of_points, right_clustering) in order of increasing the first coordinate,
-        with the equality of the first coordinate in the order of increasing the second coordinate of the point
+        The function sorts the points (arrays coords_of_points, right_clustering)
+        in order of increasing the first coordinate,
+        with the equality of the first coordinate in the order of increasing the second coordinate of the point.
         :param coords_of_points: coordinates of points for clustering in a two-dimensional coordinate system
         :param right_clustering: proper splitting of points into clusters
         :return: sorted arrays coords_of_points, right_clustering
@@ -45,7 +46,7 @@ class Cluster:
 
     def _make_colors_of_clusters(self):
         """
-        Definition of color for each cluster
+        The function determines the colors for each cluster.
         """
         def rand_color():
             r = random.randint(0, 165)
@@ -83,7 +84,7 @@ class Cluster:
         plt.show()
 
     def __str__(self):
-        """Getting string information about the object"""
+        """The function provides information about the object."""
         return "coord_of_points: {0}\n" \
                "right_clustering: {1}\n" \
                "resulting_clustering:{2}".format(self.coord_of_points, self.right_clustering, self.resulting_clustering)
@@ -109,8 +110,8 @@ class ClusterGreatCircles(Cluster):
 
     def __load(self):
         """
-        Loads data from the specified path (self.filepath + self.filename).
-        It leaves only the first entry of the record with the same longitude, latitude, owner
+        The function loads data from the specified path (self.filepath + self.filename).
+        The function leaves only the first record with the same values of longitude, latitude and the name of the owner.
         :return: coords_of_points
         """
         df = pd.read_csv(self.filepath + self.filename)
@@ -124,7 +125,7 @@ class ClusterGreatCircles(Cluster):
 
     def _make_colors_of_clusters(self, default_cluster_number):
         """
-        Definition of color for each cluster
+        The function determines the colors for each cluster.
         """
         colors_of_clusters = super()._make_colors_of_clusters()
         red = "#FF0000"
@@ -137,9 +138,9 @@ class ClusterGreatCircles(Cluster):
 
     def view_at_map(self, latitude, longitude, filename_of_map, default_cluster_number=0):
         """
-        Saves a file with the .html extension in which points are drawn on the city map.
-        Dots belonging to the same cluster are marked with the same color.
-        Red color indicates points that are noises.
+        The function saves a file with the .html extension, in which the points are displayed on the city map.
+        The function marks the same color points belonging to the same cluster.
+        Red indicates dots that are noises.
         :param latitude: city latitude
         :param longitude: city longitude
         :param filename_of_map: the name of the file received map (without extension)
@@ -163,5 +164,5 @@ class ClusterGreatCircles(Cluster):
 
 
     def __str__(self):
-        """Getting string information about the object."""
+        """The function provides information about the object."""
         return "filename: {0}\n".format(self.filename) + super().__str__()

@@ -10,7 +10,7 @@ import mglearn
 
 def build_data(kmeans, points, cnt_clusters):
     """
-    The rendering function is a clustering by the k-means algorithm
+    The function draws the result of the k-means algorithm clustering.
     :param kmeans: object class KMeans
     :param points: coordinates of clustering points
     :param cnt_clusters: number of clusters

@@ -8,7 +8,7 @@ import pandas as pd
 
 def getpage(page, api_key, lat, lon, s, headers):
     """
-    Taking information from a given page
+    The function receives information from this page.
     :param page: page number
     :param api_key: api-key
     :param lat: latitude
@@ -32,7 +32,7 @@ def getpage(page, api_key, lat, lon, s, headers):
                 'format':'json',
             }   # параметры get запроса
 
-    r = s.get(url, params=query, allow_redirects=True, headers=headers)     # запрос
+    r = s.get(url, params=query, allow_redirects=True, headers=headers)
     json_string = r.text.replace('jsonFlickrApi(', '')
     js = json.loads(json_string[:-1])
     return js['photos']['pages'], js['photos']['photo']
@@ -40,7 +40,7 @@ def getpage(page, api_key, lat, lon, s, headers):
 
 def save_csv(photos):
     """
-    Save a photo dataset in .csv format
+    The function saves data in .csv format.
     :param photos: dataset list
     :return: None
     """

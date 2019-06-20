@@ -28,8 +28,7 @@ class TopologicalSort(FirstSearch):
 
     def _topological_sort_from_start_vertex(self, v):
         """
-        Construction of topological sorting
-        (detour into depth with preservation of the time of the end of processing of vertices)
+        The function builds topological sorting from the vertex v.
         :param v: the vertex from which the traversal starts at this stage
         :return: None
         """
@@ -41,7 +40,7 @@ class TopologicalSort(FirstSearch):
 
     def _run(self):
         """
-        Run topological sorting from unvisited vertices
+        The function starts topological sorting from unvisited vertices of the graph.
         :return: None
         """
         for v in range(self.number_of_vertices):
@@ -50,13 +49,13 @@ class TopologicalSort(FirstSearch):
 
 
     def __call__(self):
-        """Construction of topological sorting from all vertices of the graph"""
+        """The function builds topological sorting on all vertices of the graph."""
         self._run()
 
 
 class StronglyConnectedComponent(TopologicalSort):
     """
-    Search class of components of strong connectedness of a directed graph
+    Class for searching strongly connected graph of a graph.
     """
     def __init__(self, number_of_vertices, list_of_adjacent_edges_of_graph, default_cluster_number):
         """
@@ -74,7 +73,7 @@ class StronglyConnectedComponent(TopologicalSort):
 
     def __build_transposed_graph(self):
         """
-        Construction of the transposed graph
+        The function builds a transposed graph.
         :return: adjacency list of transposed graph
         """
         self.list_of_adjacent_edges_of_transposed_graph = [[] for i in range(self.number_of_vertices)]
@@ -85,9 +84,9 @@ class StronglyConnectedComponent(TopologicalSort):
 
     def dfs(self, v, number_of_connected_component):
         """
-        DFS from vertex v
+        The function starts DFS from the vertex v.
         :param v: the vertex from which the depth to depth is started at this stage
-        :param number_of_connected_component: The number of components is strongly connected with the current vertex
+        :param number_of_connected_component: the number of components is strongly connected with the current vertex
         :return: None
         """
         self.numbers_of_connected_component[v] = number_of_connected_component
@@ -97,7 +96,7 @@ class StronglyConnectedComponent(TopologicalSort):
 
     def find_connected_component(self):
         """
-        Search for strongly connected components for each vertex of the graph
+        The function searches for strongly connected components for each vertex of the graph.
         :return: None
         """
         number_of_connected_component = self.default_cluster + 1
@@ -108,9 +107,9 @@ class StronglyConnectedComponent(TopologicalSort):
 
     def __call__(self):
         """
-        Construction of topological sorting of the graph
-        Search components of the strong connectedness of the graph
-        :return: numbers of components strongly connected of graph
+        The function builds topological sorting.
+        The function searches for strongly connected components of the graph.
+        :return: numbers of components strongly connected of the graph
         """
         super()._run()
         self.__build_transposed_graph()

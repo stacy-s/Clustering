@@ -1,5 +1,5 @@
 """
-Clustering Quality Assessment Metrics Module
+The module containing metrics for assessing the quality of clustering.
 """
 import Cluster
 import Clustering
@@ -44,7 +44,7 @@ class Modularity:
 
     def __calculate_cluster_edge(self):
         """
-        Counting the total number of edges, self .__ e, self .__ a for each cluster
+        The function counts the total number of arcs, self .__ e, self .__ a for each cluster.
         """
         for i in range(len(self.__elementary_graph)):
             for j in self.__elementary_graph[i]:
@@ -57,7 +57,7 @@ class Modularity:
 
     def __call__(self):
         """
-        Modularity metric counting
+        The function calculates the value of the Modularity metric.
         :return: the value of the Modularity metric
         """
         self.__calculate_cluster_edge()

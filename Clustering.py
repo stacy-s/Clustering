@@ -61,7 +61,8 @@ class Clustering():
     def __init__(self, eps, cluster: Cluster.Cluster):
         """
         Constructor
-        :param eps: distance. Points located at a distance not exceeding eps will be connected by an edge.
+        :param eps: if the points are located at a distance not exceeding eps,
+            then the points will be connected by an edge
         :param cluster: object of class Cluster.Cluster, with information about points
         """
         self.eps = eps
@@ -78,8 +79,8 @@ class Clustering():
 
     def _left_binary_search(self, left, right, x):
         """
-        Binary search to find the leftmost (first) matching point,
-        for which the distance in the first coordinate to a given point (x) does not fit eps.
+        The binary search returns the leftmost (first) point for
+        which the distance in the first coordinate to the given point (x) does not correspond to eps.
         :param left: left limit of the start of the search
         :param right: right edge of the start of the search
         :param x: the number of the point for which you want to find the left border
@@ -99,8 +100,8 @@ class Clustering():
 
     def _right_binary_search(self, left, right, x):
         """
-        Binary search to find the rightmost (last) matching point
-        for which the distance in the first coordinate to a given point (x) does not fit eps
+        The binary search returns the rightmost (last) point for
+        which the distance in the first coordinate to the given point (x) does not correspond to eps.
         :param left: left limit of the start of the search
         :param right: right edge of the start of the search
         :param x: the number of the point for which you want to find the right border
@@ -120,8 +121,8 @@ class Clustering():
 
     def _vertex_neighbor_list(self, vertex):
         """
-        Finds all neighbors of a given vertex
-        :param vertex: the top for which you need to find all the neighbors
+        The function finds all neighbors of a given vertex.
+        :param vertex: the vertex for which you need to find all the neighbors
         :return: np.array all neighbors vertex
         """
         neighbor = []
@@ -135,7 +136,7 @@ class Clustering():
 
     def _make_elementary_graph(self):
         """
-        Constructing a graph in which the distance between two vertices does not exceed eps.
+        The function builds a graph in which the distance between two vertices does not exceed eps.
         :return: adjacency list (list of numpy arrays) obtained graph
         """
         graph = [np.array([]) for _ in range(self.number_of_vertices)]
@@ -145,7 +146,7 @@ class Clustering():
 
     def counting_number_of_elements_in_list(self, lst):
         """
-        Counting the number of items in a two-dimensional list
+        The function counts the number of items in a two-dimensional list.
         :param lst: two-dimensional list
         :return: number of items in the list
         """
@@ -156,7 +157,7 @@ class Clustering():
 
     def counting_number_of_arcs_in_elementary_graph(self):
         """
-        Counting the number of arcs in the initial graph
+        The function counts the number of arcs in the initial graph.
         :return: the number of arcs in the initial graph
         """
         return self.counting_number_of_elements_in_list(self.elementary_graph)
@@ -170,7 +171,8 @@ class K_MXT(Clustering):
     def __init__(self, eps, k, cluster: Cluster.Cluster):
         """
         Constructor
-        :param eps: distance. Points located at a distance not exceeding eps will be connected by an edge
+        :param eps: if the points are located at a distance not exceeding eps,
+            then the points will be connected by an edge
         :param k: the value of the parameter k. No more than k outgoing arcs will remain from each vertex.
         :param cluster: object of class Cluster.Cluster, with information about points
         """
@@ -182,7 +184,7 @@ class K_MXT(Clustering):
 
     def _build_binary_elementary_graph(self):
         """
-        Construction of a binary adjacency matrix of the initial graph
+        The function builds a binary adjacency matrix of the original graph.
         :return: None
         """
         self.binary_representation_of_elementary_graph = np.zeros((self.number_of_vertices, self.number_of_vertices),
@@ -193,7 +195,7 @@ class K_MXT(Clustering):
 
     def _weight(self, v, u):
         """
-        Counting arc weight from v to u.
+        The function calculates the weight of the arc from v to u.
         :param v: first vertex
         :param u: second vertex
         :return: arc weight (v, u)
@@ -203,7 +205,7 @@ class K_MXT(Clustering):
 
     def _counting_weights_of_neighbors(self, v):
         """
-        Counting weights of arcs from vertex v to all neighbors of this vertex
+        The function calculates the weights of the arcs from the vertex v to all the neighbors of this vertex.
         :param v: the vertex for which the weights of all outgoing arcs are considered
         :return: the weight of all arcs emanating from the vertex v
         """
@@ -217,16 +219,16 @@ class K_MXT(Clustering):
 
     def _choose_k_arcs(self, v):
         """
-        The choice of no more than k outgoing arcs from the vertex v.
-        Arcs are selected by the greatest weight.
-        With the same weight, the arcs are chosen randomly.
+        The function selects at most k outgoing arcs from the vertex v.
+        The function selects the arc with the greatest weight.
+        The function selects the weight of the arcs with the same weights randomly.
         :param v: vertex for which arcs are selected
         :return: list of outgoing vertices
         """
 
         def sorting_weight_in_descending_order(weights):
             """
-            Sort vertices in non-increasing order of weights.
+            The function sorts vertices in ascending order of weights.
             :param weights: numpy array of vertex weights and vertex numbers
             :return: sorted array of vertices
             """
@@ -237,7 +239,7 @@ class K_MXT(Clustering):
 
         def get_weights_more_than_k_position(weights, k):
             """
-            Selection of vertices with weights greater than with weights at position k - 1 in the weights array
+            The function selects arcs with weights greater than the weight of the arc in position k - 1
             :param weights: numpy array of vertex weights and vertex numbers
             :param k: number of vertices to take. k does not exceed the size of the weights array
             :return: numbers of selected vertices
@@ -251,7 +253,7 @@ class K_MXT(Clustering):
 
         def get_weights_equal_k_position(weights, need2add, k):
             """
-            Select vertices with the same weights
+            The function selects vertices with the same weights.
             :param weights: numpy array of vertex weights and vertex numbers
             :param need2add: the number of vertices you need to get
             :param k: total number of vertices to take
@@ -276,7 +278,7 @@ class K_MXT(Clustering):
 
     def _build_graph_consists_of_k_arcs(self):
         """
-        Construction of a graph in which no more than k outgoing arcs
+        The function builds a graph in which no more than k outgoing arcs
         :return: None
         """
         self.graph_consists_of_k_arcs = [[] for _ in range(self.number_of_vertices)]
@@ -285,16 +287,17 @@ class K_MXT(Clustering):
 
     def counting_number_of_arcs_in_graph_consists_of_k_arcs(self):
         """
-        Counting the number of arcs in a graph in which no more than k outgoing arcs
+        The function calculates the number of arcs in the graph in which there are no more than k outgoing arcs.
         :return: the number of arcs in the graph in which no more than k outgoing arcs
         """
         return self.counting_number_of_elements_in_list(self.graph_consists_of_k_arcs)
 
     def __call__(self):
         """
-        Construction of the initial graph.
-        Building a graph with the number of outgoing arcs not more than k
-        Selection of components of strong connectivity of the resulting graph with at most k outgoing arcs (selection of clusters)
+        The function builds the source graph.
+        The function builds a graph with not more than k outgoing arcs from each vertex.
+        The function selects the strong connected components of the resulting graph with a maximum of k outgoing arcs.
+            (select of clusters)
         :return:  None
         """
         self.elementary_graph = self._make_elementary_graph()
@@ -305,7 +308,7 @@ class K_MXT(Clustering):
         self.cluster.resulting_clustering = g()
 
     def __str__(self):
-        """Getting string information about the object"""
+        """The function provides information about the object."""
         return "{0}-MXT, eps = {1:.1f}".format(self.k, self.eps)
 
 
@@ -317,7 +320,8 @@ class K_MXTGreatCircle(K_MXT):
     def __init__(self, eps, k, cluster: Cluster.Cluster):
         """
         Constructor
-        :param eps: distance. Points located at a distance not exceeding eps will be connected by an edge
+        :param eps: if the points are located at a distance not exceeding eps,
+            then the points will be connected by an edge
         :param k: the value of the parameter k. No more than k outgoing arcs from each vertex
         :param cluster: object of class Cluster.Cluster, with information about points
         """
@@ -336,7 +340,8 @@ class K_MXTGauss(K_MXT):
     def __init__(self, eps, k, cluster: Cluster.Cluster):
         """
         Constructor
-        :param eps: distance. Points located at a distance not exceeding eps will be connected by an edge
+        :param eps: if the points are located at a distance not exceeding eps,
+            then the points will be connected by an edge
         :param k: the value of the parameter k. No more than k outgoing arcs from each vertex
         :param cluster: object of class Cluster.Cluster, with information about points
         """
@@ -363,7 +368,7 @@ class K_MXTGauss(K_MXT):
         return self.gauss(dist) * super()._weight(v, u)
 
     def __str__(self):
-        """Getting string information about the object"""
+        """The function provides information about the object."""
         return "{0}-MXT-Gauss, eps = {1:.1f}".format(self.k, self.eps)
 
 
@@ -374,7 +379,8 @@ class K_MXTGaussGreatCircle(K_MXTGauss):
     def __init__(self, eps, k, cluster: Cluster.Cluster):
         """
         Constructor
-        :param eps: distance. Points located at a distance not exceeding eps will be connected by an edge
+        :param eps: if the points are located at a distance not exceeding eps,
+            then the points will be connected by an edge
         :param k: the value of the parameter k. No more than k outgoing arcs from each vertex
         :param cluster: object of class Cluster.Cluster, with information about points
         """
