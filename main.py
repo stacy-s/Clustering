@@ -84,7 +84,7 @@ def run_clustering_2d(k, eps):
 
 def run_clustering_city():
     # Clustering data for the city of St. Petersburg for given values of the parameters k and eps.
-    d = Cluster.ClusterGreatCircles('~/documents/diplom/', 'geoflickr_spt.csv')
+    d = Cluster.ClusterGreatCircles('./datasets/', 'geoflickr_spb_drop_duplicates.csv')
     for k in [7]:
         for eps in [50]:
             c = Clustering.K_MXTGreatCircle(eps, k, d)
@@ -102,8 +102,8 @@ def run_clustering_city():
 
 
 def main():
-    run_experimental(k=np.arange(1, 13), eps=np.arange(0.1, 4.1, 0.1))
-    run_clustering_2d(k=np.arange(1, 13), eps=np.arange(0.1, 4.1, 0.1))
+    # run_experimental(k=np.arange(1, 13), eps=np.arange(0.1, 4.1, 0.1))
+    # run_clustering_2d(k=np.arange(1, 13), eps=np.arange(0.1, 4.1, 0.1))
     run_clustering_city()
 
 
