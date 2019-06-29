@@ -3,10 +3,8 @@ import Clustering
 import Metrics
 import numpy as np
 import BuildData
-import ResultsAnalysis
 from sklearn.datasets import make_moons, make_blobs, make_circles
 import time
-import functools
 
 
 def build_plot_metrics_eps(k, eps: np.ndarray, algorithm_clustering, metric, cluster: Cluster.Cluster, step=0.5,
@@ -53,26 +51,6 @@ def build_plot_metrics_eps(k, eps: np.ndarray, algorithm_clustering, metric, clu
     BuildData.make_plot(points, title, metric.__name__, np.arange(0.0, max(eps) + step, step), np.arange(0.0, 1.1, 0.1))
 
 
-def run_experimental(k, eps):
-    """
-    The function performs an experiment for given values of the parameter k and eps.
-    :param k: the value of k
-    :param eps: the value of eps
-    :return: None
-    """
-
-    data = [functools.partial(make_blobs, n_samples=200, cluster_std=0.5),
-            functools.partial(make_blobs, n_samples=200, cluster_std=[1.0, 1.5, 0.5]),
-            functools.partial(make_circles, n_samples=200, noise=0.05, factor=0.4),
-            functools.partial(make_moons, n_samples=200, noise=0.05)]  # наборы данных
-    for i in range(1):
-        print(data[i].__str__())
-        experimental_results = ResultsAnalysis.static_experiment(Metrics.ARI, 1000,
-                                                                 k, eps, data[i])
-        ResultsAnalysis.save_results(f"{data[i].func.__name__} {data[i].__str__()[data[i].__str__().find(',') + 2:-1]} k={k} eps={eps}",
-                                     experimental_results)
-
-
 def run_clustering_2d(k, eps):
     """
     The function starts the k-MXT and k-MXT-Gauss algorithm for all specified k and eps values for each data set.
@@ -85,7 +63,7 @@ def run_clustering_2d(k, eps):
     data = [make_moons(n_samples=200, noise=0.05, random_state=0),
             make_circles(n_samples=200, noise=0.05, random_state=0, factor=0.4),
             make_blobs(n_samples=200, random_state=0, cluster_std=0.5),
-            make_blobs(n_samples=200, random_state=170, cluster_std=[1.0, 1.5, 0.5])]  # datasets
+            make_blobs(n_samples=200, random_state=170, cluster_std=[1.0, 1.5, 0.5])]
     for points, ccorrect_clustering in data:
         d = Cluster.Cluster(points, ccorrect_clustering)
         for kk in k:
@@ -118,12 +96,11 @@ def run_clustering_city(filepath, filename, k, eps, latitude, longitude):
             c.cluster.view_at_map(latitude=latitude, longitude=longitude,
                                   filename_of_map=f'{k}-MXTGauss-eps{eps}')
             m = Metrics.Modularity(c)
-            print(f'k-MXT-Gauss k={k} eps={eps} Modularity={m()}')
+            print(f'k-MXT-Gauss k = {k} eps = {eps} Modularity = {m()}')
 
 
 def main():
-    # run_experimental(k=np.arange(1, 13), eps=np.arange(0.1, 4.1, 0.1))
-    run_clustering_2d(k=np.arange(1, 13), eps=np.arange(0.1, 4.1, 0.1))
+    run_clustering_2d(k=np.arange(1, 13), eps=np.arange(0.1, 4.0, 0.1))
     run_clustering_city(filepath='./datasets/', filename='geoflickr_spb_drop_duplicates.csv',
                         k=[7, 8, 10, 12], eps=[50, 70], latitude=59.93863, longitude=30.31413)
 
